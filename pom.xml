@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.github.xtemplus</groupId>
+    <artifactId>xtemplus-core</artifactId>
+    <version>0.0.1</version>
+    <name>xtemplus-core</name>
+    <description>xtemplus-core</description>
+    <url></url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-boot.version>2.7.18</spring-boot.version>
+        <mybatis-plus.version>3.5.5</mybatis-plus.version>
+        <hutool.version>5.8.35</hutool.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>xtemplus</name>
+            <email>xtemplus@qq.com</email>
+            <organization>Sonatype</organization>
+            <organizationUrl>http://www.sonatype.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Spring Boot自动配置处理器 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>5.3.21</version>
+        </dependency>
+
+        <!-- Servlet API -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- ProGuard 代码混淆插件 -->
+            <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>proguard</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeDependency>false</includeDependency>
+                    <!-- Java 9+ 不再有 rt.jar，ProGuard 会自动使用 JDK 的模块系统 -->
+                    <options>
+                        <!-- 启用优化和内联，混淆代码逻辑 -->
+                        <option>-optimizationpasses 5</option>
+                        <option>-allowaccessmodification</option>
+                        <option>-mergeinterfacesaggressively</option>
+                        
+                        <!-- 不收缩代码（保留所有类和方法） -->
+                        <option>-dontshrink</option>
+                        <option>-dontpreverify</option>
+                        
+                        <!-- 启用混淆 -->
+                        <option>-verbose</option>
+                        
+                        <!-- 保留类名（Spring Boot需要通过完整类名加载） -->
+                        <option>-keepnames class com.template.core.**</option>
+                        
+                        <!-- 保留公共类、公共构造函数、公共方法名 -->
+                        <option>-keep class com.template.core.** {
+                            public &lt;init&gt;(...);
+                            public &lt;methods&gt;;
+                        }</option>
+                        
+                        <!-- 保留Spring相关的注解类和方法 -->
+                        <option>-keep @org.springframework.context.annotation.Configuration class com.template.core.** {
+                            *;
+                        }</option>
+                        
+                        <option>-keep @org.springframework.boot.context.properties.ConfigurationProperties class com.template.core.** {
+                            *;
+                        }</option>
+                        
+                        <option>-keepclassmembers class com.template.core.** {
+                            @org.springframework.context.annotation.Bean *;
+                        }</option>
+                        
+                        <!-- 保留配置属性类的getter/setter方法名（Spring Boot需要通过反射调用） -->
+                        <option>-keepclassmembers class com.template.core.** {
+                            public void set*(***);
+                            public boolean is*();
+                            public boolean get*();
+                            public *** get*();
+                        }</option>
+                        
+                        <!-- 混淆私有字段和私有方法 -->
+                        <option>-keepclassmembers,allowobfuscation class com.template.core.** {
+                            private &lt;fields&gt;;
+                            private &lt;methods&gt;;
+                        }</option>
+
+                        <!-- 保留枚举 AssemblyType，防止名称被混淆 -->
+                        <option>-keep enum io.github.xtemplus.mybatisplus.annotation.AssemblyType {
+                            *;
+                            }</option>
+                        
+                        <!-- 不混淆包名结构（Spring Boot需要通过完整包路径加载类） -->
+                        <option>-keeppackagenames com.template.core.**</option>
+                        
+                        <!-- 保留所有注解元数据，Spring 需要通过反射读取注解 -->
+                        <option>-keepattributes *Annotation*</option>
+                        <option>-keepattributes Signature</option>
+                        <option>-keepattributes Exceptions</option>
+                        <option>-keepattributes InnerClasses</option>
+                        <option>-keepattributes EnclosingMethod</option>
+                        <option>-keepattributes SourceFile,LineNumberTable</option>
+                        
+                        <!-- 优化选项：内联方法、合并代码等 -->
+                        <option>-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*</option>
+                        
+                        <option>-ignorewarnings</option>
+                    </options>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
