@@ -26,5 +26,4 @@ replay_pid*
 target/
 .idea/
 
-target/
-.idea/
+/pom.xml
